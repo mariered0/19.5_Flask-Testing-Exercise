@@ -37,7 +37,7 @@ function putCharInBoard() {
 
 //Sending data to the server
 async function sendInputData() {
-    const res = await axios.post('/submit', `${$inputData.val()}`);
+    const res = await axios.post('/submit', $inputData.val());
     console.log('guess', $inputData.val());
     console.log('res', res);
 }
