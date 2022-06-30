@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Boggle{% endblock %}
+
+{% block content %}
+
+
+<h1>Boggle</h1>
+
+<section id="board-container">
+    <table id="board"></table>
+</section>
+
+<section id="form-container">
+<h2>Submit Your Guess!</h2>
+
+<form action="/submit" method="POST">
+    <label for="guess-form">Enter your guess:</label>
+    <br>
+    <input type="text" name="guess" placeholder="apple">
+    <button>Submit</button>
+</form>
+
+</section>
+
+
+
+<script type=text/javascript> const board = {{ board|tojson }}; </script>
+\
+{% endblock %}
