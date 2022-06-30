@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret_boggle"
 debug = DebugToolbarExtension(app)
-# app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
+app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
 boggle_game = Boggle()
 
@@ -20,7 +20,6 @@ def display_board():
 def check_guess():
     """Submit a guess without refreshing the screen."""
     guess = request.args.get('guess')
-    # post = request.get_json()
     print(guess)
     return redirect('/')
 
