@@ -16,16 +16,16 @@ def display_board():
     """Display the Boggle board."""
     board = boggle_game.make_board()
     global game_played, best_score
-    res = request.get_json()
+    # res = request.get_json()
     print('exist?', session.get('game_played'))
-    print('bestScore received', res[best_score])
+    # print('bestScore received', res[best_score])
     if session.get('game_played') == True:
         game_played = session['game_played']
     else:
         session['game_played'] = game_played
 
     if session.get('best_score') == True:
-        best_score = res[best_score]
+        # best_score = res[best_score]
         best_score = session['best_score']
     else:
         session['best_score'] = best_score

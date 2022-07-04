@@ -111,15 +111,16 @@ async function getData() {
     }
     //first, get/send data to the server side
     const res = await axios.post('/stats', data, customConfig);
-    console.log('data sent', res.data)
+    console.log('data sent from getData()', res.data)
     gamePlayed = res.data['gamePlayed']
     bestScore = res.data['bestScore']
+
     //this function is here in order to retrieve gamePlayed and bestScore first to display.
     handleStats();
 }
 
 
-//Sending data to the server
+//Sending the input data to the server
 async function sendInputData() {
     //couldn't use "resquest.get.data," so changed it to json
     customConfig = {
