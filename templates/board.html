@@ -8,6 +8,11 @@
 
 <h1>Boggle</h1>
 
+<div id="game-container" style="display:none">
+
+<section id="msg-container"></section>
+<div id="score-container"></div>
+
 <section id="board-container">
     <table id="board"></table>
 </section>
@@ -15,7 +20,7 @@
 <section id="form-container">
 <h2>Submit Your Guess!</h2>
 
-<form action="/submit" method="POST">
+<form action="">
     <label for="guess-form">Enter your guess:</label>
     <br>
     <input type="text" name="guess" placeholder="apple">
@@ -23,9 +28,10 @@
 </form>
 
 </section>
+</div>
 
 
 
 <script type=text/javascript> const board = {{ board|tojson }}; </script>
-\
+
 {% endblock %}
