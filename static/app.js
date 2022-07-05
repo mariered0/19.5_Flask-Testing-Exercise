@@ -1,6 +1,4 @@
-const htmlBoard = document.querySelector('#board')
 const form = document.querySelector('form')
-const $inputData = $('input')
 const $msgContainer = $('#msg-container')
 let score = 0;
 let gamePlayed;
@@ -14,6 +12,7 @@ function makeHtmlBoard() {
     //creating squares for board
     for (let y = 0; y < 5; y++) {
         const tr = document.createElement('tr');
+        const htmlBoard = document.querySelector('#board')
         htmlBoard.append(tr)
 
         for (let x = 0; x < 5; x++) {
@@ -120,10 +119,14 @@ async function getData() {
 }
 
 
+
+
+
 //Sending the input data to the server
 async function sendInputData() {
     //couldn't use "resquest.get.data," so changed it to json
-    customConfig = {
+    const $inputData = $('input')
+    const customConfig = {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -176,9 +179,9 @@ function timeUp() {
     });
 }
 
-//Send stats to the server at the end of the game
+// Send stats to the server at the end of the game
 async function sendStats(){
-    customConfig = {
+    const customConfig = {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -186,15 +189,17 @@ async function sendStats(){
     const data = {
         best_score: bestScore
     }
-    const res = await axios.post('/', data, customConfig);
-
-    console.log('from getStats', res);
+    // const json = JSON.stringify(data);
+    const res = await axios.post('/get-stats', data, customConfig);
+    console.log('data from sendStats()', res.data)
+    console.log('bestScore from sendStats', res);
 }
 
 
 makeHtmlBoard();
 putCharInBoard();
 getData();
+// sendStats();
 displayTime();
 console.log(board);
 
