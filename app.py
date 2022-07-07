@@ -1,5 +1,5 @@
 from boggle import Boggle
-from flask import Flask, request, redirect, render_template, session, jsonify, json
+from flask import Flask, request, render_template, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
@@ -11,15 +11,15 @@ boggle_game = Boggle()
 game_played = 0
 best_score = 0
 
+
 @app.route('/', methods=['POST', 'GET'])
 def display_board():
-    """Display the Boggle board."""
-    board = boggle_game.make_board()
+    """Display the Boggle board and set up session."""
     global game_played, best_score
-    # res = request.get_json()
-    # data = json.loads(res)
-    print('exist?', session.get('game_played'))
-    # print('bestScore received', res)
+    board = boggle_game.make_board()
+
+    # print('exist?', session.get('game_played'))
+
     if session.get('game_played') == True:
         game_played = session['game_played']
     else:
@@ -33,18 +33,22 @@ def display_board():
     session['board'] = board
     return render_template('board.html', board=board)
 
-@app.route('/get-stats', methods=['POST'])
-def get_data():
-    """Receive stats data from the front-end."""
-    global best_score
-    res = request.get_json()
-    #this line json.loads breaks the request.
-    # data = json.loads(res)
-    print('bestScore received from sendStats()', res)
-    best_score = res['best_score']
-    #updating best_score
+
+@app.route('/stats', methods=['POST'])
+def display_stats():
+    """Send and receive game stats."""
+
+    global game_played, best_score
+    post = request.get_json()
+    print('data from /stats', post)
+    print('game_played in /stats', session['game_played'])
+    # if game_played >= 1:
+    session['game_played'] = game_played
     session['best_score'] = best_score
-    return jsonify({'best_score': best_score})
+    if post['score'] > best_score:
+        session['best_score'] = post['score']
+    print('session[game_played] in /stats', session['game_played'])
+    return jsonify({'game_played': game_played, 'best_score': best_score})
 
 @app.route('/check-word', methods=['POST'])
 def check_word():
@@ -58,18 +62,18 @@ def check_word():
     return jsonify({'result': response})
 
 
-@app.route('/stats', methods=['POST'])
-def display_stats():
-    """Display game stats."""
-    post = request.get_json()
-    print('post', post)
-    global game_played
-    global best_score
-    if game_played >= 1:
-        game_played += 1
-    session['game_played'] = game_played
+@app.route('/get-stats', methods=['POST'])
+def get_data():
+    """Receive stats data from the front-end (sendStats())."""
+   
+    global best_score, game_played
+    res = request.get_json()
+    print('bestScore received from sendStats()', res)
+    best_score = res['best_score']
+    game_played = res['game_played']
+    # updating best_score
     session['best_score'] = best_score
-    if post['score'] > best_score:
-        session['best_score'] = post['score']
-    print('gamePlayed', session['game_played'])
-    return jsonify({'gamePlayed': game_played, 'bestScore': best_score})
+    session['game_played'] = game_played
+    print('gamePlayed in get-stats', session['game_played'])
+    return jsonify({'best_score': best_score})
+

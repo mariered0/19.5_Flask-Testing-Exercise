@@ -1,211 +1,214 @@
-const form = document.querySelector('form')
-const $msgContainer = $('#msg-container')
-let score = 0;
-let gamePlayed;
-let bestScore;
-let timeleft = 60;
+class BoggleGame {
+    constructor(time) {
+        this.timeleft = time;
+        this.score = 0;
+        this.gamePlayed;
+        this.bestScore;
+        this.config = { headers: { 'Content-Type': 'application/json' }};
+        this.words = []
+    }
 
-//Creating HTML boggle board
-function makeHtmlBoard() {
-    //diplaying game container
-    $('#game-container').show();
-    //creating squares for board
-    for (let y = 0; y < 5; y++) {
-        const tr = document.createElement('tr');
-        const htmlBoard = document.querySelector('#board')
-        htmlBoard.append(tr)
+    //Creating HTML boggle board
+    makeHtmlBoard() {
+        //diplaying game container
+        $('#game-container').show();
+        //creating squares for board
+        for (let y = 0; y < 5; y++) {
+            const tr = document.createElement('tr');
+            const htmlBoard = document.querySelector('#board')
+            htmlBoard.append(tr)
 
-        for (let x = 0; x < 5; x++) {
-            const td = document.createElement('td');
-            td.setAttribute('id', `${y}-${x}`);
-            tr.append(td);
+            for (let x = 0; x < 5; x++) {
+                const td = document.createElement('td');
+                td.setAttribute('id', `${y}-${x}`);
+                tr.append(td);
+            }
+        }
+        this.putCharInBoard();
+    }
+
+    //Putting each character in squares
+    putCharInBoard() {
+        for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 5; x++) {
+                const sq = document.getElementById(`${y}-${x}`)
+                sq.innerText = board[y][x]
+            }
+        }
+        this.getData();
+    }
+
+    //Display stats
+    async handleStats() {
+        if (document.querySelector('#best-score')) {
+            $('#best-score').text(`Your Best Score: ${this.bestScore}`);
+        } else {
+            $('#score-container').append($(`<p id="best-score">Your Best Score: ${this.bestScore}</p>`));
+        }
+
+        if (document.querySelector('#game-played')) {
+            $('#game-played').text(`Game Played: ${this.gamePlayed}`);
+        } else {
+            $('#score-container').append($(`<p id="game_played">Game Played: ${this.gamePlayed}</p>`));
+        }
+        this.displayTime();
+    }
+
+    //Retrieving data from the server side
+    async getData() {
+        const data = {
+            score: this.score,
+            best_score: this.bestScore
+        }
+        //first, get/send data to the server side
+        const res = await axios.post('/stats', data, this.config);
+        console.log('1st data sent from getData()', res.data)
+        this.gamePlayed = res.data['game_played']
+        this.bestScore = res.data['best_score']
+
+        //this function is here in order to retrieve gamePlayed and bestScore first to display.
+        this.handleStats();
+    }
+
+    //Displaying different messages depending on the result.
+    displayResult(word, result) {
+        //if there's message displayed already, erase it.
+        let msg;
+        if ($('#message')) {
+            $('#message').text('');
+        }
+        if (result == 'not-on-board') {
+            msg = "This word is not on the board."
+        } else if (result == 'not-word') {
+            msg = "This word doesn't exist."
+        } else if (result == 'ok' && this.words.indexOf(`${word}`) !== -1) {
+            msg = "You have submitted this word already."
+        } else if (result == 'ok' && this.words.indexOf(`${word}`) === -1 ){
+            this.words.push(`${word}`);
+            msg = "Great!"
+        }
+        $('#msg-container').append($(`<p id="message"></p>`))
+        return $('#message').text(`${msg}`)
+    }
+
+    //Handle score and display the current score.
+    handleScore(word) {
+        console.log('word length', word.length)
+        if (word.length >= 8) {
+            this.score += 11;
+        } else if (word.length >= 7) {
+            this.score += 5;
+        } else if (word.length >= 6) {
+            this.score += 3;
+        } else if (word.length >= 5) {
+            this.score += 2;
+        } else if (word.length >= 3) {
+            console.log('3letters')
+            console.log(this.score);
+            this.score += 1;
+        }
+        console.log(this.score);
+        if (this.score > this.bestScore) {
+            this.bestScore = this.score;
+            console.log('updated bestScore!', this.bestScore)
+        }
+
+        if (document.querySelector('#score')) {
+            $('#score').text(`Your Current Score: ${this.score}`);
+        } else {
+            $('#score-container').append($(`<p id="score">Your Current Score: ${this.score}</p>`));
         }
     }
-}
 
-//Putting each character in squares
-function putCharInBoard() {
-    for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-            const sq = document.getElementById(`${y}-${x}`)
-            sq.innerText = board[y][x]
+    //Sending the input data to the server
+    async sendInputData() {
+        //couldn't use "resquest.get.data," so changed it to json
+        const word = $('input').val();
+        const inputData = {
+            word: word
         }
-    }
-}
+        const res = await axios.post('/check-word', inputData, this.config);
 
-
-//Displaying different messages depending on the result.
-function displayResult(result) {
-    //if there's message displayed already, erase it.
-    if ($('#message')) {
-        $('#message').text('');
-    }
-    if (result == 'not-on-board') {
-        msg = "This word is not on the board."
-    } else if (result == 'not-word') {
-        msg = "This word doesn't exist."
-    } else if (result == 'ok') {
-        msg = "Great!"
-    }
-    $msgContainer.append($(`<p id="message"></p>`))
-    return $('#message').text(`${msg}`)
-}
-
-function handleScore(word) {
-    console.log('word length', word.length)
-    if (word.length >= 8) {
-        score += 11;
-    } else if (word.length >= 7) {
-        score += 5;
-    } else if (word.length >= 6) {
-        score += 3;
-    } else if (word.length >= 5) {
-        score += 2;
-    } else if (word.length >= 3) {
-        console.log('3letters')
-        console.log(score);
-        score += 1;
-    }
-    console.log(score);
-    if (score > bestScore){
-        bestScore = score;
-        console.log('updated bestScore!', bestScore)
-    }
-
-    if (document.querySelector('#score')) {
-        $('#score').text(`Your Current Score: ${score}`);
-    } else {
-        $('#score-container').append($(`<p id="score">Your Current Score: ${score}</p>`));
-    }
-}
-
-
-async function handleStats(){
-    if (document.querySelector('#best-score')){
-        $('#best-score').text(`Your Best Score: ${bestScore}`);
-    } else {
-        console.log('hit', bestScore)
-        $('#score-container').append($(`<p id="best-score">Your Best Score: ${bestScore}</p>`));
-    
-    }
-
-    if (document.querySelector('#game-played')){
-        $('#game-played').text(`Game Played: ${gamePlayed}`);
-    } else {
-        console.log('hit', gamePlayed)
-        $('#score-container').append($(`<p id="game_played">Game Played: ${gamePlayed}</p>`));
-    }
-}
-
-async function getData() {
-    customConfig = {
-        headers: {
-            'Content-Type': 'application/json'
+        //recieving result from check-word
+        console.log('from sendInputData()', res.data)
+        const result = res.data.result
+        // this.gamePlayed = res.data.gamePlayed
+        // console.log('gamePlayed from sendInputData', this.gamePlayed);
+        
+        if (result == 'ok' && this.words.indexOf(`${word}`) === -1) {
+            console.log('handleScore')
+            this.handleScore(word)
         }
-    };
-    data = {
-        score: score,
-        game_played: gamePlayed,
-        best_score: bestScore
+        this.displayResult(word, result);
     }
-    //first, get/send data to the server side
-    const res = await axios.post('/stats', data, customConfig);
-    console.log('data sent from getData()', res.data)
-    gamePlayed = res.data['gamePlayed']
-    bestScore = res.data['bestScore']
-
-    //this function is here in order to retrieve gamePlayed and bestScore first to display.
-    handleStats();
-}
 
 
+    //Display remaining time
+    displayTime() {
+        $('#msg-container').append($('<p>Remaining time: <span id="time"></span> seconds</p>'));
+        console.log('timeleft', this.timeleft);
+        //this.timeleft cannot be accessed from timer variable, so we set it to time here.
+        let time = this.timeleft;
 
 
+        const timer = setInterval(() => {
+            if (time <= 0) {
+                clearInterval(timer);
+                $('#message').text("Time's Up!");
+                $('#form-container').hide();
 
-//Sending the input data to the server
-async function sendInputData() {
-    //couldn't use "resquest.get.data," so changed it to json
-    const $inputData = $('input')
-    const customConfig = {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
-    const inputData = {
-        word: $inputData.val(),
+                this.timeUp();
+
+            }
+            $('#time').text(`${time}`);
+            time--
+        }, 1000);
+
+        timer;
     }
-    const res = await axios.post('/check-word', inputData, customConfig);
 
-    //recieving result from check-word
-    console.log('from sendInputData()',res.data)
-    const result = res.data.result
-    // gamePlayed = res.data.gamePlayed
-    // console.log(gamePlayed);
-    displayResult(result)
-    if (result == 'ok') {
-        handleScore($inputData.val())
-    }
-    
-    
-}
-
-function displayTime() {
-    $msgContainer.append($('<p>Remaining time: <span id="time"></span> seconds</p>'));
-    timer
-}
-
-const timer = setInterval(function () {
-    if (timeleft <= 0) {
-        clearInterval(timer);
+    //When time is up hide the submit button, display the Play Again button, and send data to the server side.
+    timeUp() {
         $('#message').text("Time's Up!");
         $('#form-container').hide();
-        timeUp();
+        $('#game-container').append($('<button id="play-again-btn">Play Again</button>'));
+        // this.gamePlayed += 1;
+        // console.log('gamePlayed', this.gamePlayed)
+
+        $('#game-container').on('click', $('#play-again-btn'), () => {
+            this.gamePlayed += 1;
+            console.log('was it updated?', this.gamePlayed)
+            this.sendStats();
+            location.reload()
+        });
     }
-    $('#time').text(`${timeleft}`);
-    timeleft--;
-}, 1000);
 
-//When time is up hide the submit button, display the Play Again button, and send data to the server side.
-function timeUp() {
-    $('#message').text("Time's Up!");
-    $('#form-container').hide();
-    $('#game-container').append($('<button id="play-again-btn">Play Again</button>'));
-    // gamePlayed += 1;
-    console.log('gamePlayed right before sending', gamePlayed);
-    $('#game-container').on('click', $('#play-again-btn'),function(){
-        console.log('clicked!')
-        sendStats();
-        location.reload()
-    });
-}
-
-// Send stats to the server at the end of the game
-async function sendStats(){
-    const customConfig = {
-        headers: {
-            'Content-Type': 'application/json'
+    // Send stats to the server at the end of the game
+    async sendStats() {
+        const data = {
+            best_score: this.bestScore,
+            game_played: this.gamePlayed
         }
-    };
-    const data = {
-        best_score: bestScore
+        console.log('data in sendStats', data)
+        const res = await axios.post('/get-stats', data, this.config);
+        // console.log('data from sendStats()', res.data)
+        // console.log('res from sendStats', res);
     }
-    // const json = JSON.stringify(data);
-    const res = await axios.post('/get-stats', data, customConfig);
-    console.log('data from sendStats()', res.data)
-    console.log('bestScore from sendStats', res);
+
 }
 
+const boggle = new BoggleGame(60);
+boggle.makeHtmlBoard();
 
-makeHtmlBoard();
-putCharInBoard();
-getData();
-// sendStats();
-displayTime();
+// makeHtmlBoard();
+// putCharInBoard();
+// getData();
+// displayTime();
 console.log(board);
 
-form.addEventListener('submit', async function (e) {
+document.querySelector('form').addEventListener('submit', async function (e) {
     e.preventDefault()
-        //empty the input field after sending data
-        await sendInputData();
-        $inputData.val('');
+    //empty the input field after sending data
+    await boggle.sendInputData();
+    $('input').val('');
 })
