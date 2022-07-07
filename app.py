@@ -12,7 +12,7 @@ game_played = 0
 best_score = 0
 
 
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/', methods=['GET'])
 def display_board():
     """Display the Boggle board and set up session."""
     global game_played, best_score
