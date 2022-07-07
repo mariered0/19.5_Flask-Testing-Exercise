@@ -31,12 +31,12 @@ class FlaskTests(TestCase):
     def test_board_content(self):
         with self.client:
             # Checking if score data of 3 is sent, it can be received correctly.
-            data = {'best_score': '0'}
-            res = self.client.post('/stats', data)
-            data = res.get_data()
+            
+            res = self.client.post('/stats', data={'best_score': 0})
+            data = res.get_data(as_text=True)
             print('data', data)
 
 
-            # self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.status_code, 200)
 
 
