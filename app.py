@@ -39,8 +39,8 @@ def display_stats():
     """Send and receive game stats."""
 
     global game_played, best_score
-    post = request.get_json()
-    print('data from /stats', post)
+    post = request.form
+    print('score from /stats', post['score'])
     print('game_played in /stats', session['game_played'])
     # if game_played >= 1:
     session['game_played'] = game_played
@@ -53,7 +53,7 @@ def display_stats():
 @app.route('/check-word', methods=['POST'])
 def check_word():
     """Get post request data and check if it's valid."""
-    post = request.get_json()
+    post = request.form
     word = post['word']
     board = session["board"]
     # game_played = post['gamePlayed']
@@ -67,7 +67,7 @@ def get_data():
     """Receive stats data from the front-end (sendStats())."""
    
     global best_score, game_played
-    res = request.get_json()
+    res = request.form
     print('bestScore received from sendStats()', res)
     best_score = res['best_score']
     game_played = res['game_played']

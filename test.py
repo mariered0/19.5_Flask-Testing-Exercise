@@ -35,8 +35,9 @@ class FlaskTests(TestCase):
             res = self.client.post('/stats', data={'best_score': 0})
             data = res.get_data(as_text=True)
             print('data', data)
+            self.assertEqual(read_status(json.dumps(data)), res.data)
 
 
-            self.assertEqual(res.status_code, 200)
+            # self.assertEqual(res.status_code, 200)
 
 
