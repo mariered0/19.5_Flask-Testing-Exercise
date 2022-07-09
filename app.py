@@ -8,72 +8,42 @@ debug = DebugToolbarExtension(app)
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
 boggle_game = Boggle()
-game_played = 0
-best_score = 0
 
 
 @app.route('/', methods=['GET'])
 def display_board():
     """Display the Boggle board and set up session."""
-    global game_played, best_score
+    # global game_played, best_score
     board = boggle_game.make_board()
-
-    # print('exist?', session.get('game_played'))
-
-    if session.get('game_played') == True:
-        game_played = session['game_played']
-    else:
-        session['game_played'] = game_played
-
-    if session.get('best_score') == True:
-        best_score = session['best_score']
-    else:
-        session['best_score'] = best_score
-
+    game_played = session.get('game_played', 0)
+    best_score = session.get('best_score', 0)
+    score = 0
     session['board'] = board
-    return render_template('board.html', board=board)
+    return render_template('board.html', board=board, game_played=game_played, best_score=best_score, score=score)
 
 
-@app.route('/stats', methods=['POST'])
-def display_stats():
-    """Send and receive game stats."""
-
-    global game_played, best_score
-    post = request.form
-    print('score from /stats', post['score'])
-    print('game_played in /stats', session['game_played'])
-    # if game_played >= 1:
-    session['game_played'] = game_played
-    session['best_score'] = best_score
-    if post['score'] > best_score:
-        session['best_score'] = post['score']
-    print('session[game_played] in /stats', session['game_played'])
-    return jsonify({'game_played': game_played, 'best_score': best_score})
-
-@app.route('/check-word', methods=['POST'])
+@app.route('/check-word', methods=['GET'])
 def check_word():
     """Get post request data and check if it's valid."""
-    post = request.form
-    word = post['word']
-    board = session["board"]
-    # game_played = post['gamePlayed']
-    # print('gameplayed', game_played)
+    word = request.args['word']
+    print('word', word)
+    board = session.get("board")
     response = boggle_game.check_valid_word(board, word)
+
     return jsonify({'result': response})
 
 
 @app.route('/get-stats', methods=['POST'])
 def get_data():
     """Receive stats data from the front-end (sendStats())."""
-   
-    global best_score, game_played
-    res = request.form
-    print('bestScore received from sendStats()', res)
-    best_score = res['best_score']
-    game_played = res['game_played']
-    # updating best_score
-    session['best_score'] = best_score
-    session['game_played'] = game_played
-    print('gamePlayed in get-stats', session['game_played'])
-    return jsonify({'best_score': best_score})
+    score = request.json['score']
+    print('score received from sendStats()', score)
+    # updating best_score and game_played
 
+    best_score = session.get('best_score', 0)
+    game_played = session.get('game_played', 0)
+    session['game_played'] = game_played + 1
+    session['best_score'] = max(score, best_score)
+    print('best_score', session.get('best_score'),
+        'game_played', session.get('game_played'))
+    return jsonify({'game_played':game_played })

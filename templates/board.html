@@ -8,30 +8,52 @@
 
 <h1>Boggle</h1>
 
-<div id="game-container" style="display:none">
+<div id="game-container">
 
-<section id="msg-container"></section>
-<div id="score-container"></div>
+    <section id="msg-container">
+        <p id="timer">
+            Time remainning: <b id="time"></b>
+        </p>
+        <p id="msg"></p>
+    </section>
+    <div id="score-container">
+        <p id="scores">
+            Best Score: <b id="best_score">{{ best_score }}</b>
+            <br>
+            Score: <b id="score">{{ score }}</b>
+            <br>
+            <br>
+            Number of Games Played: <b id="game_played">{{ game_played }}</b>
+        </p>
+    </div>
 
-<section id="board-container">
-    <table id="board"></table>
-</section>
+    <section id="board-container">
+        <table id="board">
+            <tbody>
+                {% for row in board %}
+                <tr>
+                    {% for cell in row %}
+                    <td> {{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
 
-<section id="form-container">
-<h2>Submit Your Guess!</h2>
+    <section id="form-container">
+        <h2>Submit Your Guess!</h2>
 
-<form action="">
-    <label for="guess-form">Enter your guess:</label>
-    <br>
-    <input type="text" name="guess" placeholder="apple">
-    <button>Submit</button>
-</form>
+        <form action="">
+            <label for="guess-form">Enter your guess:</label>
+            <br>
+            <input type="text" name="guess" placeholder="apple">
+            <button>Submit</button>
+        </form>
 
-</section>
+    </section>
 </div>
 
 
 
-<script type=text/javascript> const board = {{ board|tojson }}; </script>
-
-{% endblock %}
+<script type=text/javascript> const board={{ board|tojson }}; </script> {% endblock %}
