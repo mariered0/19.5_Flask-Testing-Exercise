@@ -10,7 +10,7 @@ app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 boggle_game = Boggle()
 
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def display_board():
     """Display the Boggle board and set up session."""
     # global game_played, best_score
@@ -22,11 +22,10 @@ def display_board():
     return render_template('board.html', board=board, game_played=game_played, best_score=best_score, score=score)
 
 
-@app.route('/check-word', methods=['GET'])
+@app.route('/check-word')
 def check_word():
     """Get post request data and check if it's valid."""
     word = request.args['word']
-    print('word', word)
     board = session.get("board")
     response = boggle_game.check_valid_word(board, word)
 
@@ -37,13 +36,9 @@ def check_word():
 def get_data():
     """Receive stats data from the front-end (sendStats())."""
     score = request.json['score']
-    print('score received from sendStats()', score)
     # updating best_score and game_played
-
     best_score = session.get('best_score', 0)
     game_played = session.get('game_played', 0)
     session['game_played'] = game_played + 1
     session['best_score'] = max(score, best_score)
-    print('best_score', session.get('best_score'),
-        'game_played', session.get('game_played'))
     return jsonify({'game_played':game_played })
